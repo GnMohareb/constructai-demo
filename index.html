@@ -2,136 +2,191 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ConstructAI – Document Automation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>ConstructAI — Intelligent Document Automation</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
           colors: {
-            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' }
+            ink: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' },
+            accent: { 400:'#fbbf24',500:'#f59e0b',600:'#d97706' }
+          },
+          boxShadow: {
+            'soft': '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
+            'card': '0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05)',
+            'elevated': '0 10px 15px -3px rgb(0 0 0 / 0.04), 0 4px 6px -4px rgb(0 0 0 / 0.04)'
           }
         }
       }
     }
   </script>
   <style>
-    .drop-zone { transition: all 0.2s; }
-    .drop-zone.dragover { border-color: #3b82f6; background: #eff6ff; }
-    .confidence-high { background: #dcfce7; color: #166534; }
-    .confidence-med { background: #fef9c3; color: #854d0e; }
-    .confidence-low { background: #fee2e2; color: #991b1b; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .drop-zone { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+    .drop-zone.dragover { border-color: #f59e0b; background: #fffbeb; }
+    .conf-high { background: #ecfdf5; color: #065f46; }
+    .conf-med { background: #fffbeb; color: #92400e; }
+    .conf-low { background: #fef2f2; color: #991b1b; }
+    .tab-active { background: white; color: #0f172a; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08); }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .spin { animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    input:focus { outline: none; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); border-color: #f59e0b; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+<body class="bg-ink-50 text-ink-900 min-h-screen antialiased">
+
+  <header class="bg-white border-b border-ink-200/80 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">C</div>
-        <div>
-          <div class="font-semibold text-lg leading-tight">ConstructAI</div>
-          <div class="text-xs text-slate-500">Document Automation for Construction</div>
+        <div class="w-8 h-8 rounded-lg bg-ink-900 flex items-center justify-center">
+          <span class="text-white font-semibold text-sm tracking-tight">CA</span>
+        </div>
+        <div class="leading-tight">
+          <div class="font-semibold text-[15px] tracking-tight">ConstructAI</div>
+          <div class="text-[11px] text-ink-400 font-medium">Document Intelligence</div>
         </div>
       </div>
-      <div class="flex items-center gap-4 text-sm">
-        <span class="hidden sm:inline text-slate-500">Demo Company Inc.</span>
-        <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center font-medium text-slate-600">GM</div>
+      <div class="flex items-center gap-5">
+        <div class="hidden sm:flex items-center gap-1.5 text-xs text-ink-500">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          System Online
+        </div>
+        <div class="flex items-center gap-2.5">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs font-medium text-ink-800">Demo Company</div>
+            <div class="text-[11px] text-ink-400">Office Admin</div>
+          </div>
+          <div class="w-8 h-8 rounded-full bg-ink-100 border border-ink-200 flex items-center justify-center text-xs font-semibold text-ink-600">DC</div>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-6">
-    <div class="flex gap-1 mb-6 bg-slate-200/60 p-1 rounded-lg w-fit">
-      <button onclick="showTab('upload')" id="tab-upload" class="tab-btn px-4 py-2 rounded-md text-sm font-medium bg-white shadow text-brand-700">Upload</button>
-      <button onclick="showTab('review')" id="tab-review" class="tab-btn px-4 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900">Review</button>
-      <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900">Dashboard</button>
+  <main class="max-w-6xl mx-auto px-5 py-8">
+
+    <div class="flex items-center justify-between mb-8">
+      <div class="inline-flex p-1 bg-ink-100/80 rounded-lg">
+        <button onclick="showTab('upload')" id="tab-upload" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium transition-all tab-active">Upload</button>
+        <button onclick="showTab('review')" id="tab-review" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium text-ink-500 hover:text-ink-800 transition-all">Review</button>
+        <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium text-ink-500 hover:text-ink-800 transition-all">Dashboard</button>
+      </div>
+      <div class="text-xs text-ink-400 font-medium">MVP Preview · Ready for Client Review</div>
     </div>
 
-    <div id="panel-upload" class="panel">
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-2xl">
-        <h2 class="text-xl font-semibold mb-1">Upload Construction Documents</h2>
-        <p class="text-slate-500 text-sm mb-6">Invoices • Change Orders • Daily Reports • Purchase Orders</p>
-
-        <div id="drop-zone" class="drop-zone border-2 border-dashed border-slate-300 rounded-xl p-10 text-center cursor-pointer hover:border-brand-500 hover:bg-brand-50/50">
-          <div class="text-4xl mb-3">📄</div>
-          <p class="font-medium">Drop PDF or image here</p>
-          <p class="text-sm text-slate-500 mt-1">or click to browse</p>
-          <input type="file" id="file-input" class="hidden" accept=".pdf,image/*" />
+    <div id="panel-upload" class="panel fade-in">
+      <div class="max-w-xl">
+        <div class="mb-6">
+          <h1 class="text-2xl font-semibold tracking-tight text-ink-900">Process Documents</h1>
+          <p class="text-ink-500 text-sm mt-1.5 leading-relaxed">Upload invoices, change orders, or daily reports. AI extracts the key data in seconds.</p>
         </div>
 
-        <div class="mt-4 flex gap-3">
-          <button onclick="simulateSample()" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg text-sm font-medium transition">
-            Try Sample Invoice (Demo)
-          </button>
-          <button onclick="simulateChangeOrder()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-lg text-sm font-medium transition">
-            Try Sample Change Order
-          </button>
-        </div>
-
-        <div id="processing" class="hidden mt-8 text-center">
-          <div class="inline-flex items-center gap-3 bg-brand-50 text-brand-800 px-5 py-3 rounded-full">
-            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            <span class="font-medium">AI is extracting data…</span>
+        <div class="bg-white rounded-xl border border-ink-200/80 shadow-card overflow-hidden">
+          <div id="drop-zone" class="drop-zone p-12 text-center cursor-pointer border-b border-ink-100">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-ink-50 border border-ink-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-ink-800">Drop files here or click to browse</p>
+            <p class="text-xs text-ink-400 mt-1.5">PDF, JPG, PNG · Max 20MB</p>
+            <input type="file" id="file-input" class="hidden" accept=".pdf,image/*" />
           </div>
-          <p class="text-sm text-slate-500 mt-3">Usually takes 3–8 seconds on real documents</p>
+
+          <div class="p-4 bg-ink-50/50 flex gap-3">
+            <button onclick="runDemo('invoice')" class="flex-1 h-10 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-lg transition-colors">
+              Demo: Invoice
+            </button>
+            <button onclick="runDemo('change')" class="flex-1 h-10 bg-white hover:bg-ink-50 text-ink-800 text-sm font-medium rounded-lg border border-ink-200 transition-colors">
+              Demo: Change Order
+            </button>
+          </div>
+        </div>
+
+        <div id="processing" class="hidden mt-8">
+          <div class="bg-white rounded-xl border border-ink-200/80 shadow-card p-8 text-center">
+            <div class="w-10 h-10 mx-auto mb-4 rounded-full border-2 border-ink-200 border-t-accent-500 spin"></div>
+            <p class="text-sm font-medium text-ink-800">Extracting document data</p>
+            <p class="text-xs text-ink-400 mt-1">Analyzing layout, fields, and line items…</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <div id="panel-review" class="panel hidden">
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h2 class="text-lg font-semibold">Review Extracted Data</h2>
-            <p class="text-sm text-slate-500" id="review-filename">Sample Invoice</p>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="saveReview()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">Confirm & Save</button>
-          </div>
+    <div id="panel-review" class="panel hidden fade-in">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-semibold tracking-tight text-ink-900">Review Extraction</h1>
+          <p class="text-ink-500 text-sm mt-1" id="review-meta">—</p>
         </div>
-        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6" id="review-fields"></div>
+        <button onclick="confirmDoc()" class="h-10 px-5 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-lg transition-colors">
+          Confirm & Save
+        </button>
+      </div>
+
+      <div class="bg-white rounded-xl border border-ink-200/80 shadow-card overflow-hidden">
+        <div class="px-6 py-3.5 border-b border-ink-100 flex items-center justify-between bg-ink-50/40">
+          <span class="text-xs font-medium text-ink-500 uppercase tracking-wider">Extracted Fields</span>
+          <span class="text-xs text-ink-400">Click any value to edit</span>
+        </div>
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5" id="review-fields"></div>
       </div>
     </div>
 
-    <div id="panel-dashboard" class="panel hidden">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-sm text-slate-500">Documents this month</div>
-          <div class="text-2xl font-bold mt-1">47</div>
+    <div id="panel-dashboard" class="panel hidden fade-in">
+      <div class="mb-6">
+        <h1 class="text-2xl font-semibold tracking-tight text-ink-900">Dashboard</h1>
+        <p class="text-ink-500 text-sm mt-1">Overview of processed construction documents</p>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-xl border border-ink-200/80 shadow-card p-5">
+          <div class="text-xs font-medium text-ink-400 uppercase tracking-wider">Documents</div>
+          <div class="text-2xl font-semibold text-ink-900 mt-1.5 tracking-tight">47</div>
+          <div class="text-xs text-emerald-600 mt-1 font-medium">+12 this week</div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-sm text-slate-500">Total extracted value</div>
-          <div class="text-2xl font-bold mt-1">$318,420</div>
+        <div class="bg-white rounded-xl border border-ink-200/80 shadow-card p-5">
+          <div class="text-xs font-medium text-ink-400 uppercase tracking-wider">Total Value</div>
+          <div class="text-2xl font-semibold text-ink-900 mt-1.5 tracking-tight">$318,420</div>
+          <div class="text-xs text-ink-400 mt-1">Extracted this month</div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-sm text-slate-500">Pending review</div>
-          <div class="text-2xl font-bold mt-1 text-amber-600">3</div>
+        <div class="bg-white rounded-xl border border-ink-200/80 shadow-card p-5">
+          <div class="text-xs font-medium text-ink-400 uppercase tracking-wider">Pending</div>
+          <div class="text-2xl font-semibold text-amber-600 mt-1.5 tracking-tight">3</div>
+          <div class="text-xs text-ink-400 mt-1">Awaiting review</div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-sm text-slate-500">Avg. process time</div>
-          <div class="text-2xl font-bold mt-1">4.2s</div>
+        <div class="bg-white rounded-xl border border-ink-200/80 shadow-card p-5">
+          <div class="text-xs font-medium text-ink-400 uppercase tracking-wider">Avg. Time</div>
+          <div class="text-2xl font-semibold text-ink-900 mt-1.5 tracking-tight">4.2s</div>
+          <div class="text-xs text-ink-400 mt-1">Per document</div>
         </div>
       </div>
 
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 class="font-semibold">Recent Documents</h2>
-          <button class="text-sm text-brand-600 font-medium hover:underline">Export Excel</button>
+      <div class="bg-white rounded-xl border border-ink-200/80 shadow-card overflow-hidden">
+        <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-ink-800">Recent Documents</h2>
+          <button class="text-xs font-medium text-ink-500 hover:text-ink-800 transition-colors">Export CSV</button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-slate-600">
-              <tr>
-                <th class="text-left px-6 py-3 font-medium">Document</th>
-                <th class="text-left px-6 py-3 font-medium">Vendor</th>
-                <th class="text-left px-6 py-3 font-medium">Job #</th>
-                <th class="text-left px-6 py-3 font-medium">Amount</th>
-                <th class="text-left px-6 py-3 font-medium">Date</th>
-                <th class="text-left px-6 py-3 font-medium">Status</th>
+            <thead>
+              <tr class="border-b border-ink-100">
+                <th class="text-left px-6 py-3 text-xs font-medium text-ink-400 uppercase tracking-wider">Document</th>
+                <th class="text-left px-6 py-3 text-xs font-medium text-ink-400 uppercase tracking-wider">Vendor</th>
+                <th class="text-left px-6 py-3 text-xs font-medium text-ink-400 uppercase tracking-wider">Job</th>
+                <th class="text-left px-6 py-3 text-xs font-medium text-ink-400 uppercase tracking-wider">Amount</th>
+                <th class="text-left px-6 py-3 text-xs font-medium text-ink-400 uppercase tracking-wider">Date</th>
+                <th class="text-left px-6 py-3 text-xs font-medium text-ink-400 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody id="dashboard-rows" class="divide-y divide-slate-100"></tbody>
+            <tbody id="dash-body" class="divide-y divide-ink-50"></tbody>
           </table>
         </div>
       </div>
@@ -139,41 +194,40 @@
   </main>
 
   <script>
-    const sampleInvoice = {
-      filename: "INV-2847_ABC-Plumbing.pdf",
-      type: "Invoice",
-      fields: [
-        { label: "Vendor", value: "ABC Plumbing & Heating Ltd.", conf: 98 },
-        { label: "Invoice Number", value: "INV-2847", conf: 99 },
-        { label: "Invoice Date", value: "2026-10-15", conf: 97 },
-        { label: "Due Date", value: "2026-11-14", conf: 95 },
-        { label: "Job / Project #", value: "JOB-4412 – Lakeshore Condo", conf: 92 },
-        { label: "Description", value: "Supply & install plumbing fixtures – Phase 2", conf: 88 },
-        { label: "Subtotal", value: "$18,450.00", conf: 99 },
-        { label: "Tax (HST 13%)", value: "$2,398.50", conf: 99 },
-        { label: "Total", value: "$20,848.50", conf: 99 }
-      ]
+    const samples = {
+      invoice: {
+        meta: "INV-2847 · ABC Plumbing & Heating Ltd. · Invoice",
+        fields: [
+          { label: "Vendor", value: "ABC Plumbing & Heating Ltd.", conf: 98 },
+          { label: "Invoice Number", value: "INV-2847", conf: 99 },
+          { label: "Invoice Date", value: "2026-10-15", conf: 97 },
+          { label: "Due Date", value: "2026-11-14", conf: 95 },
+          { label: "Job / Project", value: "JOB-4412 — Lakeshore Condo Phase 2", conf: 93 },
+          { label: "Description", value: "Supply & install plumbing fixtures — Level 3-5", conf: 89 },
+          { label: "Subtotal", value: "$18,450.00", conf: 99 },
+          { label: "HST (13%)", value: "$2,398.50", conf: 99 },
+          { label: "Total", value: "$20,848.50", conf: 99 }
+        ]
+      },
+      change: {
+        meta: "CO-019 · Steel Plus Fabricators · Change Order",
+        fields: [
+          { label: "Vendor", value: "Steel Plus Fabricators Inc.", conf: 97 },
+          { label: "Change Order #", value: "CO-019", conf: 99 },
+          { label: "Date", value: "2026-10-18", conf: 98 },
+          { label: "Job / Project", value: "JOB-3891 — Mississauga Warehouse Expansion", conf: 94 },
+          { label: "Description", value: "Additional structural steel for mezzanine reinforcement", conf: 91 },
+          { label: "Original Contract", value: "$142,000.00", conf: 96 },
+          { label: "This Change", value: "+$27,850.00", conf: 98 },
+          { label: "Revised Total", value: "$169,850.00", conf: 99 }
+        ]
+      }
     };
 
-    const sampleChangeOrder = {
-      filename: "CO-019_Steel-Plus.pdf",
-      type: "Change Order",
-      fields: [
-        { label: "Vendor", value: "Steel Plus Fabricators Inc.", conf: 96 },
-        { label: "Change Order #", value: "CO-019", conf: 99 },
-        { label: "Date", value: "2026-10-18", conf: 98 },
-        { label: "Job / Project #", value: "JOB-3891 – Mississauga Warehouse", conf: 94 },
-        { label: "Description", value: "Additional structural steel for mezzanine reinforcement", conf: 91 },
-        { label: "Original Contract", value: "$142,000.00", conf: 97 },
-        { label: "This Change", value: "+$27,850.00", conf: 98 },
-        { label: "New Contract Total", value: "$169,850.00", conf: 99 }
-      ]
-    };
-
-    const dashboardData = [
+    const rows = [
       { doc: "INV-2847", vendor: "ABC Plumbing", job: "JOB-4412", amount: "$20,848.50", date: "Oct 15", status: "Reviewed" },
       { doc: "CO-019", vendor: "Steel Plus", job: "JOB-3891", amount: "$27,850.00", date: "Oct 18", status: "Pending" },
-      { doc: "DR-1102", vendor: "Site Daily", job: "JOB-4412", amount: "—", date: "Oct 20", status: "Reviewed" },
+      { doc: "DR-1102", vendor: "Site Report", job: "JOB-4412", amount: "—", date: "Oct 20", status: "Reviewed" },
       { doc: "INV-2831", vendor: "Lakeside Electric", job: "JOB-4022", amount: "$8,920.00", date: "Oct 12", status: "Reviewed" },
       { doc: "PO-556", vendor: "BuildMart Supply", job: "JOB-3891", amount: "$4,175.00", date: "Oct 10", status: "Exported" },
       { doc: "INV-2799", vendor: "Concrete Masters", job: "JOB-4412", amount: "$31,200.00", date: "Oct 08", status: "Reviewed" }
@@ -182,68 +236,55 @@
     function showTab(name) {
       document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('bg-white', 'shadow', 'text-brand-700');
-        b.classList.add('text-slate-600');
+        b.classList.remove('tab-active');
+        b.classList.add('text-ink-500');
       });
       document.getElementById('panel-' + name).classList.remove('hidden');
       const btn = document.getElementById('tab-' + name);
-      btn.classList.add('bg-white', 'shadow', 'text-brand-700');
-      btn.classList.remove('text-slate-600');
+      btn.classList.add('tab-active');
+      btn.classList.remove('text-ink-500');
     }
 
     function confClass(c) {
-      if (c >= 95) return 'confidence-high';
-      if (c >= 85) return 'confidence-med';
-      return 'confidence-low';
+      if (c >= 95) return 'conf-high';
+      if (c >= 88) return 'conf-med';
+      return 'conf-low';
     }
 
-    function renderReview(data) {
-      document.getElementById('review-filename').textContent = data.filename + '  ·  ' + data.type;
-      const container = document.getElementById('review-fields');
-      container.innerHTML = data.fields.map(f => `
-        <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">${f.label}</label>
-          <div class="flex gap-2">
-            <input type="text" value="${f.value}" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
-            <span class="text-xs px-2 py-1 rounded-md font-medium flex items-center ${confClass(f.conf)}">${f.conf}%</span>
+    function runDemo(type) {
+      document.getElementById('processing').classList.remove('hidden');
+      setTimeout(() => {
+        document.getElementById('processing').classList.add('hidden');
+        const data = samples[type];
+        document.getElementById('review-meta').textContent = data.meta;
+        document.getElementById('review-fields').innerHTML = data.fields.map(f => `
+          <div>
+            <label class="block text-[11px] font-medium text-ink-400 uppercase tracking-wider mb-1.5">${f.label}</label>
+            <div class="flex gap-2 items-center">
+              <input type="text" value="${f.value}" class="flex-1 h-9 px-3 text-sm border border-ink-200 rounded-lg bg-white text-ink-800" />
+              <span class="text-[11px] font-medium px-2 py-1 rounded-md ${confClass(f.conf)}">${f.conf}%</span>
+            </div>
           </div>
-        </div>
-      `).join('');
-      showTab('review');
+        `).join('');
+        showTab('review');
+      }, type === 'invoice' ? 2100 : 1700);
     }
 
-    function simulateSample() {
-      document.getElementById('processing').classList.remove('hidden');
-      setTimeout(() => {
-        document.getElementById('processing').classList.add('hidden');
-        renderReview(sampleInvoice);
-      }, 2200);
-    }
-
-    function simulateChangeOrder() {
-      document.getElementById('processing').classList.remove('hidden');
-      setTimeout(() => {
-        document.getElementById('processing').classList.add('hidden');
-        renderReview(sampleChangeOrder);
-      }, 1800);
-    }
-
-    function saveReview() {
-      alert('Document confirmed and saved.\n\nIn the real product this updates the live dashboard.');
+    function confirmDoc() {
       showTab('dashboard');
     }
 
-    document.getElementById('dashboard-rows').innerHTML = dashboardData.map(r => `
-      <tr class="hover:bg-slate-50">
-        <td class="px-6 py-3 font-medium">${r.doc}</td>
-        <td class="px-6 py-3">${r.vendor}</td>
-        <td class="px-6 py-3">${r.job}</td>
-        <td class="px-6 py-3 font-medium">${r.amount}</td>
-        <td class="px-6 py-3">${r.date}</td>
-        <td class="px-6 py-3">
-          <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
-            ${r.status === 'Pending' ? 'bg-amber-100 text-amber-800' :
-              r.status === 'Exported' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
+    document.getElementById('dash-body').innerHTML = rows.map(r => `
+      <tr class="hover:bg-ink-50/60 transition-colors">
+        <td class="px-6 py-3.5 font-medium text-ink-800">${r.doc}</td>
+        <td class="px-6 py-3.5 text-ink-600">${r.vendor}</td>
+        <td class="px-6 py-3.5 text-ink-600">${r.job}</td>
+        <td class="px-6 py-3.5 font-medium text-ink-800">${r.amount}</td>
+        <td class="px-6 py-3.5 text-ink-500">${r.date}</td>
+        <td class="px-6 py-3.5">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium
+            ${r.status === 'Pending' ? 'bg-amber-50 text-amber-700' :
+              r.status === 'Exported' ? 'bg-sky-50 text-sky-700' : 'bg-emerald-50 text-emerald-700'}">
             ${r.status}
           </span>
         </td>
@@ -255,12 +296,8 @@
     zone.addEventListener('click', () => input.click());
     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-    zone.addEventListener('drop', e => {
-      e.preventDefault();
-      zone.classList.remove('dragover');
-      simulateSample();
-    });
-    input.addEventListener('change', () => simulateSample());
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); runDemo('invoice'); });
+    input.addEventListener('change', () => runDemo('invoice'));
   </script>
 </body>
 </html>
